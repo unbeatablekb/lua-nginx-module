@@ -13,6 +13,9 @@ $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 $ENV{TEST_NGINX_SERVER_SSL_PORT} ||= 12345;
 $ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
+my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
+$ENV{TEST_NGINX_OPENSSL_VER} = eval { `$NginxBinary -V 2>&1 | grep OpenSSL` };
+
 
 #log_level 'warn';
 log_level 'debug';
@@ -1101,7 +1104,7 @@ $/
 --- error_log eval
 [
 'lua ssl server name: "openresty.org"',
-qr/SSL: TLSv1\.2, cipher: "(?:ECDHE-RSA-AES(?:256|128)-GCM-SHA(?:384|256)|ECDHE-(?:RSA|ECDSA)-CHACHA20-POLY1305) TLSv1\.2/,
+qr/SSL: TLSv1.2, cipher: "ECDHE-RSA-AES256-GCM-SHA384 (TLSv1.2) Kx=ECDH Au=RSA Enc=AESGCM\(256\) Mac=AEAD"/,
 ]
 --- no_error_log
 SSL reused session
@@ -1192,7 +1195,8 @@ lua ssl free session: ([0-9A-F]+)
 $/
 --- error_log eval
 ['lua ssl server name: "test.com"',
-qr/SSL: TLSv\d(?:\.\d)?, cipher: "ECDHE-RSA-AES256-SHA (SSLv3|TLSv1)/]
+qr/SSL: TLSv1, cipher: "ECDHE-RSA-AES256-SHA (TLSv1)? Kx=ECDH Au=RSA Enc=AES\(256\) Mac=SHA1"/]
+
 --- no_error_log
 SSL reused session
 [error]
@@ -1282,7 +1286,8 @@ lua ssl free session: ([0-9A-F]+)
 $/
 --- error_log eval
 ['lua ssl server name: "test.com"',
-qr/SSL: TLSv1, cipher: "ECDHE-RSA-AES256-SHA (SSLv3|TLSv1)/]
+qr/SSL: TLSv1, cipher: "ECDHE-RSA-AES128-SHA (TLSv1)? Kx=ECDH Au=RSA Enc=AES\(128|256\) Mac=SHA1/]
+
 --- no_error_log
 SSL reused session
 [error]
@@ -1364,6 +1369,7 @@ SSL reused session
 [alert]
 [emerg]
 --- timeout: 5
+--- skip_eval: 8: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/
 
 
 
@@ -1861,6 +1867,7 @@ lua ssl server name:
 SSL reused session
 [alert]
 --- timeout: 3
+--- skip_eval: 7: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/
 
 
 

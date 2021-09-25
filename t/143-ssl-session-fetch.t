@@ -14,6 +14,8 @@ $ENV{TEST_NGINX_HTML_DIR} ||= html_dir();
 $ENV{TEST_NGINX_MEMCACHED_PORT} ||= 11211;
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 $ENV{TEST_NGINX_CERT_DIR} ||= dirname(realpath(abs_path(__FILE__)));
+my $NginxBinary = $ENV{'TEST_NGINX_BINARY'} || 'nginx';
+$ENV{TEST_NGINX_OPENSSL_VER} = eval { `$NginxBinary -V 2>&1 | grep OpenSSL` };
 
 #log_level 'warn';
 log_level 'debug';
@@ -950,14 +952,12 @@ qr/ssl ((fetch|store) session|cert) by lua is running!/s
 'ssl cert by lua is running!
 ssl store session by lua is running!
 ',
-'ssl fetch session by lua is running!
-ssl cert by lua is running!
+qr/(?:ssl cert by lua is running!\nssl fetch session by lua is running!|ssl fetch session by lua is running!\nssl cert by lua is running!)
 ssl store session by lua is running!
-',
-'ssl fetch session by lua is running!
-ssl cert by lua is running!
+/ms,
+qr/(?:ssl cert by lua is running!\nssl fetch session by lua is running!|ssl fetch session by lua is running!\nssl cert by lua is running!)
 ssl store session by lua is running!
-',
+/ms,
 ]
 
 --- no_error_log
@@ -1382,6 +1382,7 @@ ssl_session_fetch_by_lua_block:1: ssl_session_fetch_by_lua\* is running!,
 [error]
 [alert]
 [emerg]
+--- skip_eval: 6: $ENV{TEST_NGINX_OPENSSL_VER} =~ m/BoringSSL/
 
 
 
