@@ -738,7 +738,7 @@ ngx_http_lua_ffi_balancer_get_last_failure(ngx_http_request_t *r,
         return NGX_ERROR;
     }
 
-    if ((ctx->context & NGX_HTTP_LUA_CONTEXT_BALANCER) == 0) {
+    if ((ctx->context & (NGX_HTTP_LUA_CONTEXT_BALANCER | NGX_HTTP_LUA_CONTEXT_LOG)) == 0) {
         *err = "API disabled in the current context";
         return NGX_ERROR;
     }
